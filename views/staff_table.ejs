@@ -1,10 +1,9 @@
-<!-- view/staff_table.ejs -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Table</title>
+    <title>Lista Pracowników</title>
     <style>
         table {
             width: 100%;
@@ -17,32 +16,110 @@
         }
         th {
             background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            color: #007bff;
+        }
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        .pagination a.disabled {
+            color: #ccc;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <h2>Pracownicy</h2>
-    <table>
+    <h2>Pracownicy Naukowi</h2>
+    <table id="academicStaffTable">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Imię i Nazwisko</th>
+                <th onclick="sortTable('academicStaffTable', 0)">Imię i Nazwisko</th>
                 <th>Email</th>
-                <th>Numer Telefonu</th>
-                <th>Numer Komórkowy</th>
+                <th>Numery Telefonów</th>
             </tr>
         </thead>
         <tbody>
-            <% staff_data.forEach(staff_member => { %>
+            <% academic_staff.forEach(staff_member => { %>
             <tr>
-                <td><%= staff_member.user.id %></td>
-                <td><%= staff_member.match %></td>
-                <td><%= staff_member.email %></td>
+                <td><%= staff_member.name %></td>
+                <td>
+                    <% if (staff_member.email_access === 'require_captcha') { %>
+                        <a href="/verify-captcha?user_id=<%= staff_member.user_id %>">Verify CAPTCHA</a>
+                    <% } else { %>
+                        <%= staff_member.email %>
+                    <% } %>
+                </td>
                 <td><%= staff_member.phone_numbers.join(', ') %></td>
-                <td><%= staff_member.mobile_numbers.join(', ') %></td>
             </tr>
             <% }); %>
         </tbody>
     </table>
+
+    <h2>Pracownicy Administracji</h2>
+    <table id="nonAcademicStaffTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable('nonAcademicStaffTable', 0)">Imię i Nazwisko</th>
+                <th>Email</th>
+                <th>Numery Telefonów</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% non_academic_staff.forEach(staff_member => { %>
+            <tr>
+                <td><%= staff_member.name %></td>
+                <td>
+                    <% if (staff_member.email_access === 'require_captcha') { %>
+                        <a href="/verify-captcha?user_id=<%= staff_member.user_id %>">Verify CAPTCHA</a>
+                    <% } else { %>
+                        <%= staff_member.email %>
+                    <% } %>
+                </td>
+                <td><%= staff_member.phone_numbers.join(', ') %></td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <% if (current_page > 0) { %>
+            <a href="/staff?query=<%= query %>&page=<%= current_page - 1 %>">Poprzednia</a>
+        <% } else { %>
+            <a class="disabled">Poprzednia</a>
+        <% } %>
+        <% if (next_page) { %>
+            <a href="/staff?query=<%= query %>&page=<%= current_page + 1 %>">Następna</a>
+        <% } else { %>
+            <a class="disabled">Następna</a>
+        <% } %>
+    </div>
+
+    <script>
+        function sortTable(tableId, columnIndex) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            rows.sort((a, b) => {
+                const [lastNameA, firstNameA] = a.children[columnIndex].textContent.trim().split(' ');
+                const [lastNameB, firstNameB] = b.children[columnIndex].textContent.trim().split(' ');
+                return lastNameA.localeCompare(lastNameB) || firstNameA.localeCompare(firstNameB);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    </script>
 </body>
 </html>

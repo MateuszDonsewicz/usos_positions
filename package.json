@@ -1,4 +1,3 @@
-// package.json
 {
   "name": "usos-api-staff-index",
   "version": "1.0.0",
@@ -9,8 +8,9 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
-    "ejs": "^3.1.7",
-    "express": "^4.17.3",
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
     "oauth-1.0a": "^2.2.6"
   }
 }

@@ -72,7 +72,7 @@ app.get('/staff', async (req, res) => {
         const userApiUrl = 'https://usosapps.impan.pl/services/users/user';
         const userParams = {
           user_id: userId,
-          fields: 'first_name|last_name|email|email_access|phone_numbers|staff_status',
+          fields: 'first_name|last_name|email|email_access|phone_numbers|staff_status|employment_positions',
           format: 'json',
         };
 
@@ -115,6 +115,14 @@ app.get('/staff', async (req, res) => {
           }
         }
 
+        // Get current employment position
+        const employmentPositions = userDetails.employment_positions || [];
+        console.log('Employment Positions for user', userId, ':', employmentPositions); // Logging the positions
+        let currentPosition = 'Brak informacji';
+        if (employmentPositions.length > 0) {
+          currentPosition = employmentPositions[0].position.name.en || employmentPositions[0].position.name.pl || 'Brak informacji';
+        }
+
         staffData.push({
           user_id: userId,
           name: `${userDetails.first_name} ${userDetails.last_name}`,
@@ -122,6 +130,7 @@ app.get('/staff', async (req, res) => {
           email_access: userDetails.email_access,
           phone_numbers: userDetails.phone_numbers || [],
           staff_status: userDetails.staff_status,
+          employment_position: currentPosition,
         });
       }
     }
@@ -200,6 +209,62 @@ app.post('/verify-captcha', async (req, res) => {
   } catch (error) {
     console.error('Error verifying CAPTCHA:', error);
     res.status(500).send('Error verifying CAPTCHA');
+  }
+});
+
+// Employment groups route
+app.get('/employment-groups', async (req, res) => {
+  const employmentGroupsUrl = 'https://usosapps.impan.pl/services/users/employment_groups_index';
+  
+  const params = {
+    fields: 'id|name|university_teachers',
+    format: 'json',
+  };
+  
+  try {
+    const response = await axios.get(employmentGroupsUrl, {
+      params,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const employmentGroups = response.data;
+    console.log('Employment Groups:', employmentGroups);
+    
+    res.render('employment_groups', { employment_groups: employmentGroups });
+  } catch (error) {
+    console.error('Error fetching employment groups:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Employment group details route
+app.get('/employment-group/:id', async (req, res) => {
+  const employmentGroupId = req.params.id;
+  const employmentGroupUrl = `https://usosapps.impan.pl/services/users/employment_group`;
+  
+  const params = {
+    id: employmentGroupId,
+    fields: 'id|name|university_teachers',
+    format: 'json',
+  };
+  
+  try {
+    const response = await axios.get(employmentGroupUrl, {
+      params,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const employmentGroupDetails = response.data;
+    console.log('Employment Group Details:', employmentGroupDetails);
+    
+    res.render('employment_group_details', { employment_group: employmentGroupDetails });
+  } catch (error) {
+    console.error('Error fetching employment group details:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 

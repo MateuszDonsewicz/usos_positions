@@ -38,22 +38,41 @@
             color: #ccc;
             pointer-events: none;
         }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <a href="/staff">Lista Pracowników</a>
+        <a href="/employment-groups">Grupy Zatrudnienia</a>
+    </nav>
+
     <h2>Pracownicy Naukowi</h2>
     <table id="academicStaffTable">
         <thead>
             <tr>
                 <th onclick="sortTable('academicStaffTable', 0)">Imię i Nazwisko</th>
+                <th>ID</th>
                 <th>Email</th>
                 <th>Numery Telefonów</th>
+                <th>Pozycja</th>
             </tr>
         </thead>
         <tbody>
             <% academic_staff.forEach(staff_member => { %>
             <tr>
                 <td><%= staff_member.name %></td>
+                <td><%= staff_member.user_id %></td>
                 <td>
                     <% if (staff_member.email_access === 'require_captcha') { %>
                         <a href="/verify-captcha?user_id=<%= staff_member.user_id %>">Verify CAPTCHA</a>
@@ -62,6 +81,7 @@
                     <% } %>
                 </td>
                 <td><%= staff_member.phone_numbers.join(', ') %></td>
+                <td><%= staff_member.employment_position %></td>
             </tr>
             <% }); %>
         </tbody>
@@ -72,14 +92,17 @@
         <thead>
             <tr>
                 <th onclick="sortTable('nonAcademicStaffTable', 0)">Imię i Nazwisko</th>
+                <th>ID</th>
                 <th>Email</th>
                 <th>Numery Telefonów</th>
+                <th>Pozycja</th>
             </tr>
         </thead>
         <tbody>
             <% non_academic_staff.forEach(staff_member => { %>
             <tr>
                 <td><%= staff_member.name %></td>
+                <td><%= staff_member.user_id %></td>
                 <td>
                     <% if (staff_member.email_access === 'require_captcha') { %>
                         <a href="/verify-captcha?user_id=<%= staff_member.user_id %>">Verify CAPTCHA</a>
@@ -88,6 +111,7 @@
                     <% } %>
                 </td>
                 <td><%= staff_member.phone_numbers.join(', ') %></td>
+                <td><%= staff_member.employment_position %></td>
             </tr>
             <% }); %>
         </tbody>
@@ -109,8 +133,8 @@
     <script>
         function sortTable(tableId, columnIndex) {
             const table = document.getElementById(tableId);
-            const tbody = table.querySelector("tbody");
-            const rows = Array.from(tbody.querySelectorAll("tr"));
+            const tbody = table.tBodies[0];
+            const rows = Array.from(tbody.rows);
 
             rows.sort((a, b) => {
                 const [lastNameA, firstNameA] = a.children[columnIndex].textContent.trim().split(' ');
